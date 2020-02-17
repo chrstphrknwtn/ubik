@@ -1,0 +1,30 @@
+{
+  "name": "ubik",
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "bin": {
+    "ubik": "./index.js"
+  },
+  "dependencies": {
+    "esm": "^3.2.25",
+    "node-static": "^0.7.11",
+    "query-string": "^6.11.0",
+    "url-parse-lax": "^4.0.0"
+  },
+  "devDependencies": {
+    "xo": "^0.26.1"
+  },
+  "xo": {
+    "space": 2,
+    "rules": {
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ],
+      "camelcase": 0
+    }
+  }
+}
