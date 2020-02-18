@@ -1,9 +1,9 @@
-# Ubik
+# ubik
 
 A live-server kind of thing for prototyping locally using ES6 import/export.
 
 ## Usage
-Install globally and then use to serve your current working directory.
+Install globally
 
 ````shell
 npm install -g ubik
