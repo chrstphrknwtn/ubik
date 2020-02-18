@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node index.js"
   },
+  "license": "MIT",
   "bin": {
     "ubik": "./index.js"
   },
