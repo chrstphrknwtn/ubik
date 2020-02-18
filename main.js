@@ -24,7 +24,6 @@ const moduleServer = (req, res, next) => {
   // Load module
   try {
     const modulePath = path.join(pagesPath, parsedURL.pathname);
-    console.log(modulePath);
     const module = require(modulePath);
     module.default(req, res);
   } catch (error) {
