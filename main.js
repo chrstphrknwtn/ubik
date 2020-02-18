@@ -1,46 +1,67 @@
 import path from 'path';
 import http from 'http';
-import { Server } from 'node-static';
+import connect from 'connect';
 import queryString from 'query-string';
 import urlParse from 'url-parse-lax';
+import clearModule from 'clear-module';
+import serveStatic from 'serve-static';
 
 const PORT = 3000;
-const staticServer = new Server(path.join(process.cwd(), 'public'), { cache: false });
+const publicPath = path.join(process.cwd(), 'public');
+const pagesPath = path.join(process.cwd(), 'pages');
 
-function errorResponse(req, res, statusCode) {
-  console.error(req, statusCode);
-  res.statusCode = statusCode;
-  res.end(String(res.statusCode));
-}
+const moduleServer = (req, res, next) => {
+  // Decorate request
+  const parsedURL = urlParse(req.url);
+  req.query = queryString.parse(parsedURL.query) || {};
+  req.pathname = parsedURL.pathname;
 
-const requestHandler = (req, res) => {
-  staticServer.serve(req, res, (error, staticRes) => {
-    // Not a static file, try to load a module from ./pages
-    if (error && error.status === 404) {
-      const parsedURL = urlParse(req.url);
-      req.query = queryString.parse(parsedURL.query) || {};
-      req.pathname = parsedURL.pathname;
-      const moduleFile = parsedURL.pathname === '/' ? '/index' : parsedURL.pathname;
-      const modulePath = path.join(process.cwd(), 'pages', moduleFile);
-      try {
-        const module = require(modulePath);
-        module.default(req, res);
-        console.log(`/pages${moduleFile}`, 200);
-        delete require.cache[require.resolve(modulePath)];
-      } catch (error_) {
-        errorResponse(`/pages${moduleFile}`, res, error_.code === 'MODULE_NOT_FOUND' ? 404 : 500);
-      }
-    // A static file was served successfully
-    } else {
-      console.log(req.url, staticRes.status);
-    }
-  });
-};
-
-http.createServer(requestHandler).listen(PORT, error => {
-  if (error) {
-    return console.error(error);
+  // Ignore typical static files that fallthrough from static server
+  if (req.pathname.match(/[.](html|css|js|svg|jpe?g|png|gif|txt|pdf)$/)) {
+    return next();
   }
 
-  console.log(`http://localhost:${PORT}`);
+  // Load module
+  try {
+    const modulePath = path.join(pagesPath, parsedURL.pathname);
+    console.log(modulePath);
+    const module = require(modulePath);
+    module.default(req, res);
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      return next(`Cannot GET ${req.pathname}`);
+    }
+  }
+
+  // Empty require cache to ensure all imports are fresh for every req/res
+  if (process.env.NODE_ENV !== 'production') {
+    clearModule.all();
+  }
+
+  next();
+};
+
+const app = connect();
+app.use(serveStatic(publicPath));
+app.use(moduleServer);
+
+const server = http.createServer(app);
+server.listen(PORT);
+
+// Handle server start success
+server.addListener('listening', () => {
+  console.log(`http://localhost:${server.address().port}`);
+});
+
+// Handle server start error
+server.addListener('error', error => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`http://localhost:${PORT} is already in use. Trying another port.`);
+    setTimeout(() => {
+      server.listen(0);
+    }, 1000);
+  } else {
+    console.error(error);
+    server.shutdown();
+  }
 });
