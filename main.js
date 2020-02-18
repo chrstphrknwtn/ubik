@@ -17,7 +17,7 @@ const moduleServer = (req, res, next) => {
   req.pathname = parsedURL.pathname;
 
   // Ignore typical static files that fallthrough from static server
-  if (req.pathname.match(/[.](html|css|js|svg|jpe?g|png|gif|txt|pdf)$/)) {
+  if (req.pathname.match(/[.](html|css|js|svg|jpe?g|png|gif|txt|pdf|ico)$/)) {
     return next();
   }
 
