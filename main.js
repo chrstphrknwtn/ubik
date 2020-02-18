@@ -10,7 +10,7 @@ const PORT = 3000;
 const publicPath = path.join(process.cwd(), 'public');
 const pagesPath = path.join(process.cwd(), 'pages');
 
-const moduleServer = (req, res, next) => {
+function moduleServer(req, res, next) {
   // Decorate request
   const parsedURL = urlParse(req.url);
   req.query = queryString.parse(parsedURL.query) || {};
@@ -21,24 +21,15 @@ const moduleServer = (req, res, next) => {
     return next();
   }
 
+  // Empty require cache
+  clearModule.all();
   // Load module
-  try {
-    const modulePath = path.join(pagesPath, parsedURL.pathname);
-    const module = require(modulePath);
-    module.default(req, res);
-  } catch (error) {
-    if (error.code === 'MODULE_NOT_FOUND') {
-      return next(`Cannot GET ${req.pathname}`);
-    }
-  }
-
-  // Empty require cache to ensure all imports are fresh for every req/res
-  if (process.env.NODE_ENV !== 'production') {
-    clearModule.all();
-  }
+  const modulePath = path.join(pagesPath, parsedURL.pathname);
+  const module = require(modulePath);
+  module.default(req, res);
 
   next();
-};
+}
 
 const app = connect();
 app.use(serveStatic(publicPath));
