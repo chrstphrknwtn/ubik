@@ -6,6 +6,8 @@
     "start": "node index.js"
   },
   "license": "MIT",
+  "repository": "chrstphrknwtn/ubik",
+  "author": "Christopher Newton <christopher.k.newton@me.com> (https://christopherknewton.com)",
   "bin": {
     "ubik": "./index.js"
   },
