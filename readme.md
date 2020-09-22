@@ -1,6 +1,6 @@
 # ubik
 
-A live-server kind of thing for prototyping locally using ES6 import/export.
+A local server thing for ES6 prototyping.
 
 ## Usage
 Install globally
